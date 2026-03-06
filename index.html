@@ -133,28 +133,34 @@ For support: Tri.caoquoc@spxexpress
 
 <script>
 
-const API="https://script.google.com/a/macros/spxexpress.com/s/AKfycbwlvce_JvPQHf2HG-U0PMAXMktQ8yJSF9-Ga4KTMKikMJKpQv-GO19WIwJ9Ry4bKxDRJw/exec";
+const API_URL="https://script.google.com/a/macros/spxexpress.com/s/AKfycbwlvce_JvPQHf2HG-U0PMAXMktQ8yJSF9-Ga4KTMKikMJKpQv-GO19WIwJ9Ry4bKxDRJw/exec";
 
 function submitOPS(){
 
 var ops=document.getElementById("opsid").value.trim();
 if(!ops) return;
 
-fetch(API,{
+fetch(API_URL,{
 method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
 body:JSON.stringify({opsid:ops})
 })
-.then(r=>r.json())
-.then(res=>{
+.then(res=>res.json())
+.then(data=>{
 
-document.getElementById("status").innerText =
-res.opsid+" - "+res.name+" - "+res.rank+" - "+res.status;
+document.getElementById("status").innerText=
+data.opsid+" - "+data.name+" - "+data.rank+" - "+data.status;
 
-document.getElementById("time").innerText=res.time;
+document.getElementById("time").innerText=data.time;
 
 document.getElementById("opsid").value="";
 document.getElementById("opsid").focus();
 
+})
+.catch(err=>{
+console.log(err);
 });
 
 }
@@ -162,7 +168,6 @@ document.getElementById("opsid").focus();
 document.getElementById("opsid").addEventListener("keypress",function(e){
 if(e.key==="Enter") submitOPS();
 });
-
 
 let detector;
 let video=document.getElementById("camera");
