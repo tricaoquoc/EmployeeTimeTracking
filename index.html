@@ -2,7 +2,7 @@
 <html>
 <head>
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <style>
 
@@ -25,19 +25,21 @@ max-width:420px;
 margin-top:40px;
 padding:20px;
 border-radius:16px;
-background:#fff;
+background:#ffffff;
 box-shadow:0 6px 18px rgba(0,0,0,.12);
 text-align:center;
 }
 
 .logo{
-width:160px;
+width:180px;
+margin:auto;
 margin-bottom:10px;
 }
 
-.title{
-font-size:20px;
+.appname{
+font-size:22px;
 font-weight:700;
+color:#333;
 margin-bottom:10px;
 }
 
@@ -49,6 +51,7 @@ box-sizing:border-box;
 input{
 padding:14px;
 border:2px solid #ddd;
+outline:none;
 border-radius:10px;
 font-size:18px;
 text-align:center;
@@ -57,7 +60,6 @@ margin-top:10px;
 
 input:focus{
 border-color:var(--main);
-outline:none;
 }
 
 button{
@@ -68,30 +70,26 @@ border-radius:10px;
 font-size:16px;
 font-weight:600;
 cursor:pointer;
+color:white;
 background:var(--main);
-color:#fff;
-}
-
-.scanBtn{
-background:#333;
 }
 
 video{
 width:100%;
 margin-top:12px;
 border-radius:10px;
-display:none;
 }
 
 .result{
-margin-top:18px;
-font-size:17px;
+margin-top:20px;
+font-size:18px;
 font-weight:600;
 }
 
 .time{
 font-size:14px;
 color:#666;
+margin-top:4px;
 }
 
 .support{
@@ -114,13 +112,13 @@ font-size:13px;
 
 <img class="logo" src="https://i.imgur.com/g7DWGWX.png">
 
-<div class="title">QUẢN LÝ GIỜ IN / OUT</div>
+<div class="appname">QUẢN LÝ GIỜ IN / OUT</div>
 
 <input id="opsid" placeholder="Nhập hoặc scan OPSID">
 
 <button onclick="submitOPS()">Xác nhận</button>
 
-<button class="scanBtn" onclick="startCamera()">📷 Mở Camera Scan</button>
+<button onclick="startCamera()">📷 Mở Camera Scan</button>
 
 <video id="camera" autoplay></video>
 
@@ -135,12 +133,19 @@ For support: Tri.caoquoc@spxexpress
 
 <script>
 
+const API="https://script.google.com/a/macros/spxexpress.com/s/AKfycbwlvce_JvPQHf2HG-U0PMAXMktQ8yJSF9-Ga4KTMKikMJKpQv-GO19WIwJ9Ry4bKxDRJw/exec";
+
 function submitOPS(){
 
 var ops=document.getElementById("opsid").value.trim();
 if(!ops) return;
 
-google.script.run.withSuccessHandler(function(res){
+fetch(API,{
+method:"POST",
+body:JSON.stringify({opsid:ops})
+})
+.then(r=>r.json())
+.then(res=>{
 
 document.getElementById("status").innerText =
 res.opsid+" - "+res.name+" - "+res.rank+" - "+res.status;
@@ -150,7 +155,7 @@ document.getElementById("time").innerText=res.time;
 document.getElementById("opsid").value="";
 document.getElementById("opsid").focus();
 
-}).scanOPS(ops);
+});
 
 }
 
@@ -163,8 +168,6 @@ let detector;
 let video=document.getElementById("camera");
 
 async function startCamera(){
-
-video.style.display="block";
 
 const stream=await navigator.mediaDevices.getUserMedia({
 video:{facingMode:"environment"}
@@ -182,15 +185,16 @@ scanLoop();
 
 async function scanLoop(){
 
-if(!detector) return;
-
 try{
 
 const barcodes=await detector.detect(video);
 
 if(barcodes.length>0){
 
-document.getElementById("opsid").value=barcodes[0].rawValue;
+let code=barcodes[0].rawValue;
+
+document.getElementById("opsid").value=code;
+
 submitOPS();
 
 }
