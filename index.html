@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+
+body{
+margin:0;
+font-family:system-ui;
+background:#f4f6f8;
+display:flex;
+justify-content:center;
+}
+
+.wrapper{
+width:100%;
+max-width:420px;
+margin-top:40px;
+padding:20px;
+background:#fff;
+border-radius:16px;
+box-shadow:0 6px 18px rgba(0,0,0,.12);
+text-align:center;
+}
+
+.logo{
+width:180px;
+margin-bottom:10px;
+}
+
+button{
+width:100%;
+padding:14px;
+margin-top:10px;
+border:none;
+background:#ee4d2d;
+color:white;
+font-size:16px;
+border-radius:10px;
+}
+
+video{
+width:100%;
+margin-top:10px;
+border-radius:10px;
+}
+
+.result{
+margin-top:20px;
+font-size:18px;
+font-weight:600;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<img class="logo" src="https://i.imgur.com/g7DWGWX.png">
+
+<h3>SCAN OPSID</h3>
+
+<button onclick="startCamera()">Mở Camera</button>
+
+<video id="camera" autoplay></video>
+
+<div class="result" id="result"></div>
+
+</div>
+
+<script>
+
+const API="PASTE_APPS_SCRIPT_URL_HERE";
+
+let detector;
+let video=document.getElementById("camera");
+
+async function startCamera(){
+
+const stream=await navigator.mediaDevices.getUserMedia({
+video:{facingMode:"environment"}
+});
+
+video.srcObject=stream;
+
+detector=new BarcodeDetector({
+formats:["code_128","qr_code","ean_13","ean_8"]
+});
+
+scanLoop();
+
+}
+
+async function scanLoop(){
+
+try{
+
+const barcodes=await detector.detect(video);
+
+if(barcodes.length>0){
+
+let code=barcodes[0].rawValue;
+
+fetch(API,{
+method:"POST",
+body:JSON.stringify({opsid:code})
+})
+.then(r=>r.json())
+.then(res=>{
+document.getElementById("result").innerText=
+res.opsid+" - "+res.name+" - "+res.status;
+});
+
+}
+
+}catch(e){}
+
+requestAnimationFrame(scanLoop);
+
+}
+
+</script>
+
+</body>
+</html>
